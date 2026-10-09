@@ -2,6 +2,9 @@
 
 Newest first. One `## <version> — <date>` heading per version, then `feat:`, `fix:`, `breaking:` and `chore:` bullets (ADR-478). Built from git history; older versions: `git log -- plugins/ruflo-console`.
 
+## 0.40.9 — 2026-10-09
+- feat: an external plugin the ruflo marketplace lists by a git source (the first is `agentic-qe-fleet`, Agentic QE) shows in the Plugin Catalog with an EXT badge and where it is installed from; its skills, agents, commands, MCP config and mod are read from its install path in `installed_plugins.json`, since the ruflo clone holds none. Its commands launch from Dev Tools, and the plugin-coverage test now also requires a section for every external marketplace entry
+
 ## 0.40.8 — 2026-10-09
 - fix: an ADR scope glob with many stars no longer freezes the console: the matcher is a bounded two-pointer scan instead of a regex (a 16-star glob against a short path took 38 s; it now takes microseconds, at the real input caps under 10 ms for 9,600 pairs); results are identical on legitimate globs (ADR-480)
 - fix: an ADR title over 120 characters is refused with the count on every path (the page field, the `adr-propose` palette entry, `/ruflo run`, `console_run`) instead of being cut into the file name, and a draft whose title was shortened from a mission's objective says so on the confirm card (ADR-481)
