@@ -192,6 +192,7 @@ export { AgentDBAdapter } from './agentdb-adapter.js';
 export type { AgentDBAdapterConfig } from './agentdb-adapter.js';
 export { AgentDBBackend } from './agentdb-backend.js';
 export type { AgentDBBackendConfig } from './agentdb-backend.js';
+export { getHostSqliteDriver, useHostSqliteDriver } from './agentdb-native-driver.js';
 export {
   AgentDbRetrievalGuard,
   createAgentDbRetrievalGuard,
