@@ -26,6 +26,7 @@ import type { MemoryGraphConfig } from './memory-graph.js';
 import { TieredCacheManager } from './cache-manager.js';
 import type { CacheConfig } from './types.js';
 import { TieredMemoryStore } from './tiered-memory.js';
+import { useHostSqliteDriver } from './agentdb-native-driver.js';
 
 // ===== Types =====
 
@@ -542,6 +543,8 @@ export class ControllerRegistry extends EventEmitter {
       }
 
       this.agentdb = new AgentDBClass({ dbPath });
+      // Keep agentdb's nested better-sqlite3 11.x out of the process (Node 24 abort).
+      useHostSqliteDriver(this.agentdb);
 
       // Suppress agentdb's noisy info-level output during init
       // using stderr redirect instead of monkey-patching console.log

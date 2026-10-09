@@ -12,6 +12,7 @@
 
 import { EventEmitter } from 'node:events';
 import { safeJsonParse } from './json-security.js';
+import { useHostSqliteDriver } from './agentdb-native-driver.js';
 import {
   IMemoryBackend,
   MemoryEntry,
@@ -206,6 +207,8 @@ export class AgentDBBackend extends EventEmitter implements IMemoryBackend {
         vectorBackend: this.config.vectorBackend,
         vectorDimension: this.config.vectorDimension,
       });
+      // Keep agentdb's nested better-sqlite3 11.x out of the process (Node 24 abort).
+      useHostSqliteDriver(this.agentdb);
 
       // Suppress agentdb's noisy console.log during init
       // (EmbeddingService, AgentDB core emit info-level logs we don't need)
