@@ -32,8 +32,16 @@ jobs:
         run: |
           npm install --ignore-scripts --omit=optional --legacy-peer-deps --workspaces=false --package-lock=false --no-audit --no-fund
           binding_version=$(node -p 'require("./node_modules/rolldown/package.json").version')
-          npm install --no-save --ignore-scripts --omit=optional --legacy-peer-deps --workspaces=false --package-lock=false --no-audit --no-fund "@rolldown/binding-${{ matrix.binding }}@$binding_version"
+          npm install --no-save --ignore-scripts --omit=optional --legacy-peer-deps --workspaces=false --package-lock=false --no-audit --no-fund "@rolldown/binding-${{ matrix.binding }}@$binding_version" @types/node@24
+      - name: Install optional build dependency
+        run: npm install --prefix "$RUNNER_TEMP/status-build-deps" --ignore-scripts --no-audit --no-fund nostr-tools@2.25.2
+      - name: Build sibling package and complete CLI package
+        run: |
+          export STATUS_BUILD_DEPS="$RUNNER_TEMP/status-build-deps"
+          node ../../../evidence/status-agents/prepare-build.cjs
+          node node_modules/typescript/bin/tsc -p ../swarm
+          npm run build
       - name: Agent status regression and existing hive tests
         run: npx --no-install vitest run __tests__/status-agents.test.ts __tests__/agent-logs-hive-resolution.test.ts
-      - name: CLI process smoke (runtime transpilation, not a package typecheck)
+      - name: Built CLI process smoke
         run: node ../../../evidence/status-agents/smoke.cjs
