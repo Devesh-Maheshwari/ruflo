@@ -22,10 +22,14 @@ try {
     demo: { agentId: 'demo-coder', agentType: 'coder', status: 'idle', health: 0.85,
       taskCount: 3, config: {}, createdAt: '2026-01-01T00:00:00.000Z' },
   } }));
-  const run = args => cp.execFileSync(process.execPath, [path.join(pkg, 'bin/cli.js'), 'status', 'agents', ...args, '--no-update'], {
+  const run = args => {
+    const result = cp.spawnSync(process.execPath, [path.join(pkg, 'bin/cli.js'), 'status', 'agents', ...args, '--no-update'], {
     cwd: dir, encoding: 'utf8', timeout: 30000,
     env: { ...process.env, CLAUDE_FLOW_CWD: dir, RUFLO_DAEMON_AUTOSTART: '0', NO_COLOR: '1' },
   });
+    assert.equal(result.status, 0, result.stderr || String(result.error));
+    return args.includes('--format') ? result.stdout : result.stdout + result.stderr;
+  };
   const text = run([]);
   assert.match(text, /demo-coder/);
   assert.match(text, /idle/);

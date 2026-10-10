@@ -1,0 +1,47 @@
+$ node bin/cli.js mcp exec -t agent_list -p {}
+
+[OK] Tool executed in 12.25ms
+
+Result:
+{
+  "agents": [
+    {
+      "agentId": "demo-coder",
+      "agentType": "coder",
+      "status": "idle",
+      "health": 0.85,
+      "taskCount": 3,
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    }
+  ],
+  "total": 1,
+  "filters": {}
+}
+[INFO] Executing tool: agent_list
+
+$ node bin/cli.js status agents
+
+Agent Status
+
++------------+-------+--------+-------+--------+
+| ID         | Type  | Status | Tasks | Health |
++------------+-------+--------+-------+--------+
+| demo-coder | coder | idle   | 3     | 0.85   |
++------------+-------+--------+-------+--------+
+
+$ node bin/cli.js status agents --format json
+{
+  "agents": [
+    {
+      "agentId": "demo-coder",
+      "agentType": "coder",
+      "status": "idle",
+      "health": 0.85,
+      "taskCount": 3,
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    }
+  ],
+  "total": 1,
+  "filters": {}
+}
+
