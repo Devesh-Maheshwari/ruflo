@@ -1,0 +1,39 @@
+name: Status agents proof
+on:
+  push:
+    branches: [ci/status-agents-proof]
+permissions:
+  contents: read
+jobs:
+  regression:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            binding: linux-x64-gnu
+          - os: macos-latest
+            binding: darwin-arm64
+          - os: windows-latest
+            binding: win32-x64-msvc
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: v3/@claude-flow/cli
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+      - name: Install package and test runner
+        run: |
+          npm install --ignore-scripts --omit=optional --legacy-peer-deps --workspaces=false --package-lock=false --no-audit --no-fund
+          binding_version=$(node -p 'require("./node_modules/rolldown/package.json").version')
+          npm install --no-save --ignore-scripts --omit=optional --legacy-peer-deps --workspaces=false --package-lock=false --no-audit --no-fund "@rolldown/binding-${{ matrix.binding }}@$binding_version"
+      - name: Agent status regression and existing hive tests
+        run: npx --no-install vitest run __tests__/status-agents.test.ts __tests__/agent-logs-hive-resolution.test.ts
+      - name: CLI process smoke (runtime transpilation, not a package typecheck)
+        run: node ../../../evidence/status-agents/smoke.cjs
