@@ -2,7 +2,7 @@ name: Codex activity
 
 on:
   push:
-    branches: [main]
+    branches: [ci/codex-activity-review-proof]
     paths:
       - 'v3/@claude-flow/codex/**'
       - 'scripts/smoke-codex-activity.mjs'
@@ -43,3 +43,7 @@ jobs:
         working-directory: v3/@claude-flow/codex
         run: npm test -- --run tests/activity-files.test.ts tests/activity-parser.test.ts tests/activity-viewer.test.ts
       - run: node scripts/smoke-codex-activity.mjs
+      - name: Run full Codex suite on Linux
+        if: runner.os == 'Linux'
+        working-directory: v3/@claude-flow/codex
+        run: npm test -- --run
