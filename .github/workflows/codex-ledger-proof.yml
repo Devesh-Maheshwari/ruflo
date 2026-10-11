@@ -1,0 +1,60 @@
+name: Codex ledger fork validation
+
+on:
+  push:
+    branches: [ci/codex-ledger-proof]
+
+permissions:
+  contents: read
+
+jobs:
+  ledger:
+    name: Codex ledger (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 8
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 3
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '20'
+      - name: Verify regressions fail against upstream
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import { execFileSync, spawnSync } from 'node:child_process';
+          import { mkdtempSync, copyFileSync, writeFileSync, rmSync } from 'node:fs';
+          import { tmpdir } from 'node:os';
+          import { join } from 'node:path';
+          const directory = mkdtempSync(join(tmpdir(), 'ledger-baseline-'));
+          try {
+            writeFileSync(join(directory, '_ledger.mjs'), execFileSync('git', ['show', 'fe703f07349b84ce96f5710842af13baf5c8f052:plugins/ruflo-cost-tracker/scripts/_ledger.mjs']));
+            copyFileSync('plugins/ruflo-cost-tracker/scripts/test-codex-ledger.mjs', join(directory, 'test-codex-ledger.mjs'));
+            const result = spawnSync(process.execPath, ['--test', '--test-reporter=tap', join(directory, 'test-codex-ledger.mjs')], { encoding: 'utf8' });
+            console.log(result.stdout);
+            assert.equal(result.status, 1);
+            assert.match(result.stdout, /# tests 11/);
+            assert.match(result.stdout, /# fail 8/);
+            assert.match(result.stdout, /# pass 3/);
+          } finally {
+            rmSync(directory, { recursive: true, force: true });
+          }
+          NODE
+      - name: Check reader syntax
+        run: node --check plugins/ruflo-cost-tracker/scripts/_ledger.mjs
+      - name: Run fixed Codex regression tests
+        run: node --test --test-reporter=tap plugins/ruflo-cost-tracker/scripts/test-codex-ledger.mjs
+      - name: Run existing ledger suite and plugin smoke
+        if: runner.os != 'Windows'
+        run: |
+          node plugins/ruflo-cost-tracker/scripts/test-ledger.mjs
+          bash plugins/ruflo-cost-tracker/scripts/smoke.sh
